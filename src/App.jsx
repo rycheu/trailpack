@@ -14,7 +14,6 @@ const DEFAULT_GEAR = [
   { id: 8, name: "Rain Jacket", category: "Clothing", weight: 11, needsReplacement: false, notes: "" },
 ];
 
-// Format ounces as "X lb Y oz" or just "Y oz"
 const formatWeight = (oz) => {
   if (!oz) return null;
   const lbs = Math.floor(oz / 16);
@@ -36,7 +35,6 @@ export default function CampingOrganizer() {
     try {
       const saved = localStorage.getItem("camping-gear");
       const parsed = saved ? JSON.parse(saved) : DEFAULT_GEAR;
-      // deduplicate by id — keep last occurrence
       const seen = new Map();
       parsed.forEach(g => seen.set(g.id, g));
       const deduped = Array.from(seen.values());
@@ -56,7 +54,7 @@ export default function CampingOrganizer() {
     } catch { return []; }
   });
 
-  const [view, setView] = useState("inventory"); // inventory | trips | tripDetail
+  const [view, setView] = useState("inventory");
   const [activeTrip, setActiveTrip] = useState(null);
   const [filterCategory, setFilterCategory] = useState("All");
   const [showAddGear, setShowAddGear] = useState(false);
@@ -66,7 +64,7 @@ export default function CampingOrganizer() {
   const [editingGear, setEditingGear] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [copied, setCopied] = useState(false);
-  const [showDataModal, setShowDataModal] = useState(false); // 'export' | 'import' | false
+  const [showDataModal, setShowDataModal] = useState(false);
   const [importText, setImportText] = useState("");
   const [importError, setImportError] = useState("");
 
@@ -129,12 +127,10 @@ export default function CampingOrganizer() {
     if (trip.date) lines.push(`📅 ${trip.date}`);
     if (trip.notes?.trim()) lines.push(`\n📝 Notes:\n${trip.notes.trim()}`);
     lines.push("");
-
     const packedGear = gear.filter(g => trip.packedGearIds.includes(g.id));
     const totalW = packedGear.reduce((s, g) => s + (g.weight || 0), 0);
     lines.push(`Packing List (${packedGear.length} items${totalW ? ` · ${formatWeight(totalW)}` : ""})`);
     lines.push("─".repeat(36));
-
     CATEGORIES.forEach(cat => {
       const items = packedGear.filter(g => g.category === cat);
       if (!items.length) return;
@@ -147,13 +143,11 @@ export default function CampingOrganizer() {
         lines.push(parts.join(" "));
       });
     });
-
     const unpacked = gear.filter(g => !trip.packedGearIds.includes(g.id));
     if (unpacked.length) {
       lines.push(`\n── Not packing (${unpacked.length} items) ──`);
       unpacked.forEach(item => lines.push(`  ${item.name}`));
     }
-
     navigator.clipboard.writeText(lines.join("\n")).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
@@ -176,7 +170,6 @@ export default function CampingOrganizer() {
         setImportError("Invalid format — make sure you pasted the full exported text.");
         return;
       }
-      // deduplicate gear by id
       const seen = new Map();
       parsed.gear.forEach(g => seen.set(g.id, g));
       const deduped = Array.from(seen.values());
@@ -239,10 +232,9 @@ export default function CampingOrganizer() {
           background: #1c2e1a;
         }
 
-        /* Tiling topo pattern applied to the root element so it scrolls with content */
         .topo-root {
           background-color: #1c2e1a;
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='600'%3E%3C!-- filled terrain bands --%3E%3Cpath d='M-100%2C480 C150%2C450 350%2C490 600%2C460 C800%2C435 1000%2C468 1250%2C448 C1360%2C438 1430%2C452 1540%2C444 L1540%2C600 L-100%2C600 Z' fill='%23213520' opacity='0.9'/%3E%3Cpath d='M-100%2C380 C200%2C345 400%2C385 650%2C355 C850%2C330 1050%2C365 1300%2C342 C1400%2C332 1460%2C346 1540%2C338 L1540%2C600 L-100%2C600 Z' fill='%23263d22' opacity='0.55'/%3E%3Cpath d='M-100%2C280 C150%2C245 380%2C285 620%2C255 C820%2C230 1020%2C265 1260%2C242 C1370%2C232 1440%2C246 1540%2C238 L1540%2C600 L-100%2C600 Z' fill='%232b4525' opacity='0.4'/%3E%3C!-- contour lines group 1 - lower valley --%3E%3Cpath d='M-100%2C510 C0%2C492 140%2C518 320%2C498 C500%2C478 620%2C505 800%2C485 C980%2C465 1100%2C492 1300%2C474 C1400%2C465 1460%2C472 1540%2C466' fill='none' stroke='%233a6030' stroke-width='1.5' opacity='0.6'/%3E%3Cpath d='M-100%2C532 C20%2C512 160%2C540 340%2C518 C520%2C496 640%2C525 820%2C504 C1000%2C483 1120%2C512 1320%2C492 C1415%2C482 1465%2C490 1540%2C484' fill='none' stroke='%233a6030' stroke-width='1' opacity='0.42'/%3E%3Cpath d='M-100%2C552 C40%2C530 180%2C560 360%2C537 C540%2C514 660%2C544 840%2C522 C1020%2C500 1140%2C530 1340%2C510 C1428%2C500 1470%2C508 1540%2C502' fill='none' stroke='%233a6030' stroke-width='0.7' opacity='0.3'/%3E%3C!-- contour lines group 2 - mid slope --%3E%3Cpath d='M-100%2C405 C80%2C372 260%2C408 500%2C378 C700%2C352 880%2C386 1120%2C360 C1270%2C344 1400%2C368 1540%2C352' fill='none' stroke='%234a7835' stroke-width='2' opacity='0.62'/%3E%3Cpath d='M-100%2C428 C100%2C392 285%2C430 525%2C398 C725%2C370 905%2C408 1145%2C380 C1295%2C362 1420%2C388 1540%2C372' fill='none' stroke='%234a7835' stroke-width='1.4' opacity='0.46'/%3E%3Cpath d='M-100%2C450 C120%2C412 305%2C452 548%2C418 C748%2C388 928%2C428 1168%2C398 C1318%2C378 1438%2C406 1540%2C390' fill='none' stroke='%234a7835' stroke-width='0.9' opacity='0.32'/%3E%3C!-- contour lines group 3 - upper ridge --%3E%3Cpath d='M-100%2C295 C80%2C258 280%2C298 520%2C265 C720%2C238 920%2C272 1160%2C248 C1300%2C234 1430%2C256 1540%2C242' fill='none' stroke='%235a9040' stroke-width='2.2' opacity='0.58'/%3E%3Cpath d='M-100%2C318 C100%2C278 300%2C320 542%2C285 C742%2C256 942%2C292 1182%2C266 C1322%2C250 1448%2C275 1540%2C260' fill='none' stroke='%235a9040' stroke-width='1.6' opacity='0.42'/%3E%3Cpath d='M-100%2C340 C118%2C298 318%2C342 562%2C305 C762%2C274 962%2C312 1202%2C284 C1342%2C266 1460%2C293 1540%2C278' fill='none' stroke='%235a9040' stroke-width='1' opacity='0.3'/%3E%3Cpath d='M-100%2C360 C135%2C316 335%2C362 580%2C323 C780%2C290 980%2C330 1220%2C300 C1358%2C280 1468%2C310 1540%2C294' fill='none' stroke='%235a9040' stroke-width='0.6' opacity='0.22'/%3E%3C!-- contour lines group 4 - near summit --%3E%3Cpath d='M-100%2C175 C100%2C138 320%2C178 580%2C145 C780%2C118 980%2C152 1220%2C128 C1358%2C112 1460%2C135 1540%2C120' fill='none' stroke='%236aaa45' stroke-width='2.4' opacity='0.5'/%3E%3Cpath d='M-100%2C200 C120%2C160 340%2C202 602%2C167 C802%2C138 1002%2C175 1242%2C149 C1380%2C131 1468%2C157 1540%2C142' fill='none' stroke='%236aaa45' stroke-width='1.7' opacity='0.36'/%3E%3Cpath d='M-100%2C222 C138%2C180 358%2C224 622%2C187 C822%2C156 1022%2C196 1262%2C168 C1398%2C148 1472%2C178 1540%2C162' fill='none' stroke='%236aaa45' stroke-width='1.1' opacity='0.26'/%3E%3Cpath d='M-100%2C242 C155%2C198 375%2C244 640%2C205 C840%2C172 1040%2C215 1280%2C185 C1414%2C164 1475%2C196 1540%2C180' fill='none' stroke='%236aaa45' stroke-width='0.6' opacity='0.18'/%3E%3C!-- subtle fill bands --%3E%3Cpath d='M-100%2C258 C80%2C218 280%2C258 520%2C225 C720%2C198 920%2C232 1160%2C208 C1300%2C194 1430%2C216 1540%2C202 L1540%2C318 C1420%2C332 1285%2C308 1140%2C324 C900%2C348 700%2C312 460%2C340 C230%2C368 65%2C335 -100%2C358 Z' fill='%232d4d22' opacity='0.15'/%3E%3Cpath d='M-100%2C80 C120%2C44 340%2C84 600%2C52 C800%2C26 1000%2C58 1240%2C36 C1370%2C22 1460%2C42 1540%2C28 L1540%2C175 C1450%2C188 1340%2C165 1200%2C180 C960%2C200 760%2C168 520%2C194 C290%2C218 110%2C188 -100%2C210 Z' fill='%23365828' opacity='0.12'/%3E%3C/svg%3E");
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='600'%3E%3Cpath d='M-100%2C480 C150%2C450 350%2C490 600%2C460 C800%2C435 1000%2C468 1250%2C448 C1360%2C438 1430%2C452 1540%2C444 L1540%2C600 L-100%2C600 Z' fill='%23213520' opacity='0.9'/%3E%3Cpath d='M-100%2C380 C200%2C345 400%2C385 650%2C355 C850%2C330 1050%2C365 1300%2C342 C1400%2C332 1460%2C346 1540%2C338 L1540%2C600 L-100%2C600 Z' fill='%23263d22' opacity='0.55'/%3E%3Cpath d='M-100%2C280 C150%2C245 380%2C285 620%2C255 C820%2C230 1020%2C265 1260%2C242 C1370%2C232 1440%2C246 1540%2C238 L1540%2C600 L-100%2C600 Z' fill='%232b4525' opacity='0.4'/%3E%3Cpath d='M-100%2C510 C0%2C492 140%2C518 320%2C498 C500%2C478 620%2C505 800%2C485 C980%2C465 1100%2C492 1300%2C474 C1400%2C465 1460%2C472 1540%2C466' fill='none' stroke='%233a6030' stroke-width='1.5' opacity='0.6'/%3E%3Cpath d='M-100%2C532 C20%2C512 160%2C540 340%2C518 C520%2C496 640%2C525 820%2C504 C1000%2C483 1120%2C512 1320%2C492 C1415%2C482 1465%2C490 1540%2C484' fill='none' stroke='%233a6030' stroke-width='1' opacity='0.42'/%3E%3Cpath d='M-100%2C552 C40%2C530 180%2C560 360%2C537 C540%2C514 660%2C544 840%2C522 C1020%2C500 1140%2C530 1340%2C510 C1428%2C500 1470%2C508 1540%2C502' fill='none' stroke='%233a6030' stroke-width='0.7' opacity='0.3'/%3E%3Cpath d='M-100%2C405 C80%2C372 260%2C408 500%2C378 C700%2C352 880%2C386 1120%2C360 C1270%2C344 1400%2C368 1540%2C352' fill='none' stroke='%234a7835' stroke-width='2' opacity='0.62'/%3E%3Cpath d='M-100%2C428 C100%2C392 285%2C430 525%2C398 C725%2C370 905%2C408 1145%2C380 C1295%2C362 1420%2C388 1540%2C372' fill='none' stroke='%234a7835' stroke-width='1.4' opacity='0.46'/%3E%3Cpath d='M-100%2C450 C120%2C412 305%2C452 548%2C418 C748%2C388 928%2C428 1168%2C398 C1318%2C378 1438%2C406 1540%2C390' fill='none' stroke='%234a7835' stroke-width='0.9' opacity='0.32'/%3E%3Cpath d='M-100%2C295 C80%2C258 280%2C298 520%2C265 C720%2C238 920%2C272 1160%2C248 C1300%2C234 1430%2C256 1540%2C242' fill='none' stroke='%235a9040' stroke-width='2.2' opacity='0.58'/%3E%3Cpath d='M-100%2C318 C100%2C278 300%2C320 542%2C285 C742%2C256 942%2C292 1182%2C266 C1322%2C250 1448%2C275 1540%2C260' fill='none' stroke='%235a9040' stroke-width='1.6' opacity='0.42'/%3E%3Cpath d='M-100%2C340 C118%2C298 318%2C342 562%2C305 C762%2C274 962%2C312 1202%2C284 C1342%2C266 1460%2C293 1540%2C278' fill='none' stroke='%235a9040' stroke-width='1' opacity='0.3'/%3E%3Cpath d='M-100%2C360 C135%2C316 335%2C362 580%2C323 C780%2C290 980%2C330 1220%2C300 C1358%2C280 1468%2C310 1540%2C294' fill='none' stroke='%235a9040' stroke-width='0.6' opacity='0.22'/%3E%3Cpath d='M-100%2C175 C100%2C138 320%2C178 580%2C145 C780%2C118 980%2C152 1220%2C128 C1358%2C112 1460%2C135 1540%2C120' fill='none' stroke='%236aaa45' stroke-width='2.4' opacity='0.5'/%3E%3Cpath d='M-100%2C200 C120%2C160 340%2C202 602%2C167 C802%2C138 1002%2C175 1242%2C149 C1380%2C131 1468%2C157 1540%2C142' fill='none' stroke='%236aaa45' stroke-width='1.7' opacity='0.36'/%3E%3Cpath d='M-100%2C222 C138%2C180 358%2C224 622%2C187 C822%2C156 1022%2C196 1262%2C168 C1398%2C148 1472%2C178 1540%2C162' fill='none' stroke='%236aaa45' stroke-width='1.1' opacity='0.26'/%3E%3Cpath d='M-100%2C242 C155%2C198 375%2C244 640%2C205 C840%2C172 1040%2C215 1280%2C185 C1414%2C164 1475%2C196 1540%2C180' fill='none' stroke='%236aaa45' stroke-width='0.6' opacity='0.18'/%3E%3Cpath d='M-100%2C258 C80%2C218 280%2C258 520%2C225 C720%2C198 920%2C232 1160%2C208 C1300%2C194 1430%2C216 1540%2C202 L1540%2C318 C1420%2C332 1285%2C308 1140%2C324 C900%2C348 700%2C312 460%2C340 C230%2C368 65%2C335 -100%2C358 Z' fill='%232d4d22' opacity='0.15'/%3E%3Cpath d='M-100%2C80 C120%2C44 340%2C84 600%2C52 C800%2C26 1000%2C58 1240%2C36 C1370%2C22 1460%2C42 1540%2C28 L1540%2C175 C1450%2C188 1340%2C165 1200%2C180 C960%2C200 760%2C168 520%2C194 C290%2C218 110%2C188 -100%2C210 Z' fill='%23365828' opacity='0.12'/%3E%3C/svg%3E");
           background-repeat: repeat-y;
           background-size: 100% auto;
         }
@@ -297,7 +289,6 @@ export default function CampingOrganizer() {
         .stat-box { background: rgba(28,42,22,0.85); backdrop-filter: blur(6px); border: 1.5px solid #2e4a24; border-radius: 16px; padding: 16px 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); }
       `}</style>
 
-
       {/* Header */}
       <div className="content-layer" style={{ borderBottom: "1px solid #2e4a24", padding: "0 24px", background: "rgba(20,32,16,0.85)", backdropFilter: "blur(10px)" }}>
         <div style={{ maxWidth: 900, margin: "0 auto" }}>
@@ -335,15 +326,10 @@ export default function CampingOrganizer() {
         {/* INVENTORY VIEW */}
         {view === "inventory" && (
           <div>
-            {/* Stats */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 24 }}>
               <div className="stat-box">
                 <div style={{ color: "#4a7a32", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>Total Items</div>
                 <div style={{ fontSize: 28, fontWeight: 800, color: "#a8d870", marginTop: 4 }}>{gear.length}</div>
-              </div>
-              <div className="stat-box">
-                <div style={{ color: "#4a7a32", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>Total Weight</div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#a8d870", marginTop: 4 }}>{formatWeight(totalWeight) || "—"}</div>
               </div>
               <div className="stat-box" style={{ borderColor: needsReplacementCount ? "rgba(200,120,30,0.5)" : "#2e4a24" }}>
                 <div style={{ color: "#4a7a32", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>Needs Replacement</div>
@@ -351,7 +337,6 @@ export default function CampingOrganizer() {
               </div>
             </div>
 
-            {/* Controls */}
             <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
               <input placeholder="Search gear..." value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)} style={{ flex: 1, minWidth: 160 }} />
@@ -362,7 +347,6 @@ export default function CampingOrganizer() {
               <button className="btn btn-primary" onClick={() => setShowAddGear(true)}>+ Add Gear</button>
             </div>
 
-            {/* Gear grouped by category */}
             {Object.keys(groupedGear).length === 0 && (
               <div style={{ textAlign: "center", color: "#4a7a32", padding: 60, fontWeight: 600 }}>No gear found. Add some!</div>
             )}
@@ -457,7 +441,6 @@ export default function CampingOrganizer() {
               </div>
             )}
 
-            {/* Trip stats */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 24 }}>
               <div className="stat-box">
                 <div style={{ color: "#4a7a32", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>Packed</div>
@@ -473,7 +456,6 @@ export default function CampingOrganizer() {
               </div>
             </div>
 
-            {/* Trip Notes */}
             <div style={{ marginBottom: 24 }}>
               <div style={{ fontSize: 11, textTransform: "uppercase", letterSpacing: "0.1em", color: "#7ac848", fontWeight: 800, marginBottom: 8 }}>📝 Trip Notes</div>
               <textarea
@@ -484,7 +466,6 @@ export default function CampingOrganizer() {
               />
             </div>
 
-            {/* Gear checklist grouped by category */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
               <h3 style={{ fontSize: 13, textTransform: "uppercase", letterSpacing: "0.1em", color: "#7ac848", fontWeight: 800 }}>Packing List</h3>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "flex-end" }}>
@@ -586,6 +567,7 @@ export default function CampingOrganizer() {
           </div>
         </div>
       )}
+
       {/* Edit Gear Modal */}
       {editingGear && (
         <div className="modal-bg" onClick={e => e.target === e.currentTarget && setEditingGear(null)}>
